@@ -13,6 +13,23 @@ export class ServerDown extends Error {
 
 const TIMEOUT_MS = 25_000;
 
+// Freno de emergencia: nunca más de RATE_MAX requests por minuto al TEC, pase lo
+// que pase arriba. Uso normal: ~10 al abrir y casi nada después (hay caché).
+const RATE_MAX = 60;
+const RATE_WINDOW = 60_000;
+const recent: number[] = [];
+
+export class TooManyRequests extends Error {
+  constructor() { super('TEC Vegetal frenó los pedidos al TEC Digital por seguridad. Recargá en un minuto.'); }
+}
+
+function takeRateToken(): void {
+  const now = Date.now();
+  while (recent.length && now - recent[0] > RATE_WINDOW) recent.shift();
+  if (recent.length >= RATE_MAX) throw new TooManyRequests();
+  recent.push(now);
+}
+
 // En Firefox el `fetch` global del content script corre con el principal de la
 // extensión; `content.fetch` corre como la página y manda las cookies de sesión.
 const pageFetch: typeof fetch = (() => {
@@ -41,6 +58,7 @@ const isLogin = (url: string) => {
 
 async function raw(url: string, priority: boolean): Promise<string> {
   return slot(async () => {
+    takeRateToken();
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
     let res: Response;

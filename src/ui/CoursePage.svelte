@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import type { Route } from '../lib/router.svelte';
   import { courseHomeRes, evalsRes, rootFolderRes } from '../lib/data/api';
   import { href } from '../lib/router.svelte';
@@ -17,11 +18,15 @@
   const evals = $derived(course ? evalsRes(course) : null);
   const home = $derived(course ? courseHomeRes(course) : null);
 
+  const loadKey = $derived(course ? `${course.id}:${route.tab}` : '');
   $effect(() => {
-    if (!course) return;
-    courseHomeRes(course).load({ priority: route.tab === 'resumen' });
-    evalsRes(course).load({ priority: route.tab !== 'docs' });
-    rootFolderRes(course).load({ priority: route.tab === 'docs' });
+    if (!loadKey) return;
+    untrack(() => {
+      if (!course) return;
+      courseHomeRes(course).load({ priority: route.tab === 'resumen' });
+      evalsRes(course).load({ priority: route.tab !== 'docs' });
+      rootFolderRes(course).load({ priority: route.tab === 'docs' });
+    });
   });
 
   // Pestañas tal como las da el sitio para este curso; las que TEC Vegetal no pinta

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { href } from '../lib/router.svelte';
   import { folderRes, rootFolderRes, lastSeen, markSeen, folderAncestors } from '../lib/data/api';
   import { clock } from '../lib/clock.svelte';
@@ -14,7 +15,8 @@
   const now = $derived(clock.now);
 
   $effect(() => {
-    if (id) folderRes(course, id).load({ priority: true });
+    const fid = id;
+    if (fid) untrack(() => folderRes(course, fid).load({ priority: true }));
   });
 
   // "Nuevo desde tu última visita": se compara contra la visita anterior a esta carpeta.

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { router } from '../lib/router.svelte';
   import { session } from '../lib/data/resource.svelte';
   import { evalsRes, rootFolderRes } from '../lib/data/api';
@@ -25,10 +25,16 @@
 
   // El inicio muestra nota y pendientes de cada curso: apenas se conocen los cursos se piden sus evaluaciones (y la carpeta raíz
   // de Documentos, con menos prioridad, para que abrirla sea instantáneo).
+  // Solo cambia cuando cambia la lista de cursos (no con cada dato que llega),
+  // así el efecto no se re-dispara en cada actualización.
+  const courseKey = $derived((courses.data?.current ?? []).map((c) => c.id).join('|'));
   $effect(() => {
-    const current = courses.data?.current ?? [];
-    for (const c of current) evalsRes(c).load();
-    for (const c of current) rootFolderRes(c).load();
+    courseKey;
+    untrack(() => {
+      const current = courses.data?.current ?? [];
+      for (const c of current) evalsRes(c).load();
+      for (const c of current) rootFolderRes(c).load();
+    });
   });
 
   const route = $derived(router.route);

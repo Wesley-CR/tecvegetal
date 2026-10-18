@@ -31,6 +31,12 @@ export class Resource<T> {
   #error: string | undefined = undefined;
   #hydrated = false;
   #inflight: Promise<void> | null = null;
+  // Fallos seguidos y cuándo fue el último: un recurso que falla no se vuelve
+  // a pedir hasta que pase la espera (15 s, 30 s, 1 min… hasta 5 min). Sin esto,
+  // cualquier cambio de datos re-disparaba la carga y un fallo se reintentaba
+  // en bucle (cientos de requests por segundo al servidor del TEC).
+  #failures = 0;
+  #failedAt = 0;
 
   get data(): T | undefined { rev.n; return this.#data; }
   set data(v: T | undefined) { this.#data = v; rev.n++; }
@@ -46,6 +52,11 @@ export class Resource<T> {
     readonly ttl: number,
     private loader: (priority: boolean) => Promise<T>,
   ) {}
+
+  /** Espera antes de reintentar después de `n` fallos seguidos. */
+  static backoff(n: number): number {
+    return n <= 0 ? 0 : Math.min(5 * 60_000, 15_000 * 2 ** (n - 1));
+  }
 
   get stale(): boolean {
     return this.#updatedAt == null || Date.now() - this.#updatedAt > this.ttl;
@@ -64,8 +75,9 @@ export class Resource<T> {
   /** Hidrata desde caché y revalida si hace falta. Devuelve cuando hay datos frescos o falla. */
   async load(opts: { force?: boolean; priority?: boolean } = {}): Promise<void> {
     await this.hydrate();
-    if (!opts.force && !this.stale) return;
     if (this.#inflight) return this.#inflight;
+    if (!opts.force && !this.stale) return;
+    if (!opts.force && this.#failures && Date.now() - this.#failedAt < Resource.backoff(this.#failures)) return;
     this.#inflight = (async () => {
       this.loading = true;
       try {
@@ -74,10 +86,13 @@ export class Resource<T> {
         this.data = v;
         this.updatedAt = t;
         this.error = undefined;
+        this.#failures = 0;
         session.expired = false;
         session.down = false;
         await store.set(this.key, v, t);
       } catch (e) {
+        this.#failures++;
+        this.#failedAt = Date.now();
         if (e instanceof SessionExpired) session.expired = true;
         if (e instanceof ServerDown) session.down = true;
         this.error = e instanceof Error ? e.message : String(e);
