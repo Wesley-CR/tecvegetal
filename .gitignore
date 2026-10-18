@@ -1,0 +1,9 @@
+node_modules
+.output
+.wxt
+dist
+# HTML/JSON capturados del sitio real: traen nombre, notas y datos de profes
+fixtures/private
+demo/dist
+.impeccable
+*.zip

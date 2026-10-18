@@ -1,0 +1,38 @@
+{
+  "name": "tecvegetal",
+  "version": "1.0.0",
+  "description": "TEC Digital, pero rápido y legible",
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build && wxt build -b firefox",
+    "zip": "wxt zip && wxt zip -b firefox",
+    "test": "vitest run",
+    "check": "svelte-check",
+    "postinstall": "wxt prepare",
+    "build:demo": "vite build -c demo/vite.config.ts",
+    "test:smoke": "npm run build:demo && node scripts/smoke-pending.mjs demo/dist/demo.js",
+    "build:firefox": "wxt build -b firefox",
+    "build:chrome": "wxt build"
+  },
+  "author": "",
+  "license": "GPL-3.0-only",
+  "devDependencies": {
+    "@tsconfig/svelte": "^5.0.8",
+    "@wxt-dev/module-svelte": "^2.0.5",
+    "happy-dom": "^21.0.3",
+    "svelte": "^5.57.2",
+    "svelte-check": "^4.7.7",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5",
+    "wxt": "^0.21.4"
+  },
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@fontsource-variable/atkinson-hyperlegible-next": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

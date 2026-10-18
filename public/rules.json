@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": { "type": "redirect", "redirect": { "url": "https://tecdigital.tec.ac.cr/tecvegetal/" } },
+    "condition": {
+      "regexFilter": "^https://tecdigital\\.tec\\.ac\\.cr/dotlrn/(index)?$",
+      "resourceTypes": ["main_frame"]
+    }
+  }
+]

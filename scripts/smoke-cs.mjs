@@ -1,0 +1,24 @@
+import { Window } from 'happy-dom';
+import fs from 'node:fs';
+const url = process.argv[3] || 'https://tecdigital.tec.ac.cr/tecvegetal/';
+const win = new Window({ url, settings: { disableJavaScriptFileLoading: true } });
+const errors = [];
+win.addEventListener('error', (e) => errors.push('error: ' + (e.error?.stack || e.message)));
+win.addEventListener('unhandledrejection', (e) => errors.push('rejection: ' + (e.reason?.stack || e.reason)));
+win.console.error = (...a) => errors.push('console.error: ' + a.map((x) => x?.stack || String(x)).join(' '));
+win.console.warn = (...a) => errors.push('console.warn: ' + a.map(String).join(' '));
+const fetched = [];
+win.fetch = async (u) => { fetched.push(String(u)); return new win.Response('<html><body>login</body></html>', { status: 200, headers: { 'content-type': 'text/html' } }); };
+win.stop = () => fetched.push('window.stop()');
+win.chrome = { runtime: { id: 'test', getURL: (p) => 'chrome-extension://test' + p } };
+win.browser = win.chrome;
+win.document.write('<html><head><title>404</title></head><body>Not found</body></html>');
+const code = fs.readFileSync(process.argv[2], 'utf8');
+try { win.eval(code); } catch (e) { errors.push('eval: ' + e.stack); }
+await new Promise((r) => setTimeout(r, 1500));
+console.log('url now:', win.location.href);
+console.log('title:', win.document.title);
+console.log('body:', win.document.body?.textContent.replace(/\s+/g, ' ').slice(0, 300));
+console.log('fetched:', fetched.slice(0, 8));
+console.log('ERRORS:', errors.length ? errors.join('\n---\n').slice(0, 3000) : 'ninguno');
+await win.happyDOM.close();
