@@ -26,9 +26,9 @@ export default defineConfig({
     vite: {
       // CSS de los componentes va dentro del JS: no queremos un .css global
       // inyectado por el manifest en páginas que no tomamos.
-      // fragments: 'tree' arma las plantillas con createElement en vez de
-      // innerHTML: así la revisión de Mozilla no marca nada.
-      compilerOptions: { css: 'injected', fragments: 'tree' },
+      // Plantillas en modo normal ('html'). Se probó fragments: 'tree' para
+      // quitar un warning de Mozilla y la app quedaba en blanco en Chrome.
+      compilerOptions: { css: 'injected' },
     },
   },
   manifest: {

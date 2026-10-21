@@ -5,6 +5,10 @@ import { browser } from 'wxt/browser';
 import { canonicalize, classicRequested, hrefFor, installLinkInterceptor, isFastPath, leaveClassic, matchRoute } from './router.svelte';
 import { startClock } from './clock.svelte';
 
+import { VERSION, showFatal } from './fatal';
+
+const log = (...a: unknown[]) => console.info('[TEC Vegetal]', ...a);
+
 /**
  * Corre en document_start. Si la URL es una vista que TEC Vegetal sabe pintar, corta la
  * carga de la página original (window.stop) antes de que baje el resto del HTML,
@@ -32,14 +36,14 @@ export function boot(): void {
 }
 
 function start(): void {
+  log(`v${VERSION} tomando ${location.pathname}`);
   try {
     window.stop();
     takeOver();
+    log('montado');
   } catch (err) {
-    console.error('[TEC Vegetal] no se pudo montar, se muestra la página original', err);
-    try { sessionStorage.setItem('tecvegetal:classic', '1'); } catch { /* nada */ }
-    if (isFastPath(location.pathname)) location.assign('/dotlrn/index?classic');
-    else location.reload();
+    console.error('[TEC Vegetal] no se pudo montar', err);
+    showFatal(err);
   }
 }
 
@@ -65,9 +69,21 @@ function takeOver(): void {
   const style = document.createElement('style');
   style.textContent = globalCss(fontUrls());
   document.head.appendChild(style);
+  // Errores tardíos (en efectos, después de montar) también se muestran.
+  window.addEventListener('error', (e) => showFatal(e.error ?? e.message));
+  window.addEventListener('unhandledrejection', (e) => {
+    const r = e.reason;
+    // Fallos de red ya los maneja la UI (aviso de sesión o servidor caído).
+    if (r && /SessionExpired|ServerDown|TooManyRequests/.test(r.constructor?.name ?? '')) return;
+    showFatal(r);
+  });
   startClock();
   installLinkInterceptor(document);
-  mount(App, { target: document.body });
+  mount(App, { target: document.body! });
+  // Red de seguridad: si a los 4 s no hay nada visible, avisar en vez de quedar en blanco.
+  setTimeout(() => {
+    if (!document.querySelector('header')) showFatal(new Error('La app no llegó a dibujarse (no hay barra superior a los 4 s).'));
+  }, 4000);
 }
 
 function fontUrls(): FontUrls | undefined {

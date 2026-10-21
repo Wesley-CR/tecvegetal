@@ -8,6 +8,7 @@
   import Home from './Home.svelte';
   import CoursePage from './CoursePage.svelte';
   import Palette from './Palette.svelte';
+  import { showFatal } from '../lib/fatal';
 
   let paletteOpen = $state(false);
 
@@ -50,6 +51,7 @@
   });
 </script>
 
+<svelte:boundary onerror={(e) => showFatal(e)}>
 <TopBar onsearch={() => (paletteOpen = true)} />
 
 <main>
@@ -80,6 +82,7 @@
 {#if paletteOpen}
   <Palette onclose={() => (paletteOpen = false)} />
 {/if}
+</svelte:boundary>
 
 <style>
   main { padding-bottom: 96px; }

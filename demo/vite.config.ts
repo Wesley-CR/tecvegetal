@@ -6,7 +6,7 @@ import path from 'node:path';
 export default defineConfig({
   root: __dirname,
   plugins: [
-    svelte({ compilerOptions: { css: 'injected', fragments: 'tree' } }),
+    svelte({ compilerOptions: { css: 'injected' } }),
     {
       name: 'mock-net',
       enforce: 'pre',
