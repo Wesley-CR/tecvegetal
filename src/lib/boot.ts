@@ -38,7 +38,9 @@ export function boot(): void {
 function start(): void {
   log(`v${VERSION} tomando ${location.pathname}`);
   try {
-    window.stop();
+    // En Chrome NO se llama window.stop(): marca el parser como abortado y
+    // después document.open() no hace nada. document.open() ya corta la carga.
+    if (!import.meta.env.CHROME) window.stop();
     takeOver();
     log('montado');
   } catch (err) {
@@ -48,19 +50,30 @@ function start(): void {
 }
 
 function takeOver(): void {
-  const html = document.documentElement ?? document.appendChild(document.createElement('html'));
-  // Página nueva armada con APIs del DOM (sin innerHTML).
-  html.replaceChildren();
-  const head = document.createElement('head');
-  const charset = document.createElement('meta');
-  charset.setAttribute('charset', 'utf-8');
-  const viewport = document.createElement('meta');
-  viewport.name = 'viewport';
-  viewport.content = 'width=device-width, initial-scale=1';
-  const title = document.createElement('title');
-  title.textContent = 'TEC Vegetal';
-  head.append(charset, viewport, title);
-  html.append(head, document.createElement('body'));
+  if (import.meta.env.CHROME) {
+    // Chrome solo empieza a pintar cuando SU parser inserta <body> o termina de
+    // parsear. Tras window.stop() eso nunca pasa: si armamos el DOM a mano la
+    // página queda completa pero invisible (pantalla en blanco). document.open()
+    // + write() + close() crea un parser nuevo que sí termina y destraba el pintado.
+    document.open();
+    document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>TEC Vegetal</title></head><body></body></html>');
+    document.close();
+  } else {
+    // Firefox pinta bien con el DOM armado a mano (y su revisión prefiere no usar document.write).
+    const root = document.documentElement ?? document.appendChild(document.createElement('html'));
+    root.replaceChildren();
+    const head = document.createElement('head');
+    const charset = document.createElement('meta');
+    charset.setAttribute('charset', 'utf-8');
+    const viewport = document.createElement('meta');
+    viewport.name = 'viewport';
+    viewport.content = 'width=device-width, initial-scale=1';
+    const title = document.createElement('title');
+    title.textContent = 'TEC Vegetal';
+    head.append(charset, viewport, title);
+    root.append(head, document.createElement('body'));
+  }
+  const html = document.documentElement;
   html.setAttribute('lang', 'es');
   try {
     const t = localStorage.getItem('tecvegetal:theme');
@@ -84,6 +97,16 @@ function takeOver(): void {
   setTimeout(() => {
     if (!document.querySelector('header')) showFatal(new Error('La app no llegó a dibujarse (no hay barra superior a los 4 s).'));
   }, 4000);
+  // Si el navegador no pinta ningún frame en 5 s (con la pestaña visible), el
+  // DOM está pero no se ve: mejor caer a la página normal que quedar en blanco.
+  let painted = false;
+  requestAnimationFrame(() => { painted = true; });
+  setTimeout(() => {
+    if (painted || document.hidden) return;
+    console.error('[TEC Vegetal] el navegador no pintó la página; se abre la versión normal');
+    try { sessionStorage.setItem('tecvegetal:classic', '1'); } catch { /* nada */ }
+    location.assign('/dotlrn/index?classic');
+  }, 5000);
 }
 
 function fontUrls(): FontUrls | undefined {
