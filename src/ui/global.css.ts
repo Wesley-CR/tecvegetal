@@ -24,6 +24,11 @@ const LIGHT = `
   --u-now: #c93526; --u-soon: #b76300; --u-week: #7d6f00; --u-later: #5d7190; --ok: #2f7d3d;
   --side: #e6ebf2; --sel: rgb(31 111 178 / 0.2);`;
 
+const TINT_LIGHT = `
+  --bg: oklch(0.965 calc(var(--tint-c) * 0.35) var(--tint-h)); --surface-0: oklch(0.995 calc(var(--tint-c) * 0.15) var(--tint-h)); --raise-0: oklch(0.94 calc(var(--tint-c) * 0.4) var(--tint-h));
+  --line: oklch(0.9 calc(var(--tint-c) * 0.45) var(--tint-h)); --line-strong: oklch(0.8 calc(var(--tint-c) * 0.5) var(--tint-h)); --side: oklch(0.935 calc(var(--tint-c) * 0.45) var(--tint-h));
+  --muted: oklch(0.5 calc(var(--tint-c) * 0.7) var(--tint-h)); --faint: oklch(0.64 calc(var(--tint-c) * 0.6) var(--tint-h));`;
+
 export const globalCss = (fonts?: FontUrls) => `
 ${fontFace(fonts)}
 :root {
@@ -44,6 +49,14 @@ ${fontFace(fonts)}
 }
 #tv-bg { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; opacity: var(--bg-opacity, 0.7); pointer-events: none; user-select: none; }
 :root[data-bg="image"] #tv-bg { filter: blur(var(--bg-blur)); transform: scale(1.08); }
+/* Tono personalizado: misma luminosidad que el tema original, otro matiz. */
+:root[data-tint] {
+  --bg: oklch(0.205 var(--tint-c) var(--tint-h)); --surface-0: oklch(0.245 var(--tint-c) var(--tint-h)); --raise-0: oklch(0.28 var(--tint-c) var(--tint-h));
+  --line: oklch(0.32 var(--tint-c) var(--tint-h)); --line-strong: oklch(0.41 var(--tint-c) var(--tint-h)); --side: oklch(0.175 var(--tint-c) var(--tint-h));
+  --muted: oklch(0.72 calc(var(--tint-c) * 0.8) var(--tint-h)); --faint: oklch(0.55 calc(var(--tint-c) * 0.8) var(--tint-h));
+}
+:root[data-tint][data-theme="light"] {${TINT_LIGHT} }
+@media (prefers-color-scheme: light) { :root[data-tint]:not([data-theme="dark"]) {${TINT_LIGHT} } }
 :root[data-bg="glass"] :is(.panel, .glass) { -webkit-backdrop-filter: blur(var(--bg-blur)) saturate(1.15); backdrop-filter: blur(var(--bg-blur)) saturate(1.15); }
 :root[data-bg] header.glass { background: color-mix(in srgb, var(--bg) var(--panel-a, 80%), transparent); }
 :root[data-bg] .solid { background: var(--surface-0); }

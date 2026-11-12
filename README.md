@@ -8,12 +8,12 @@ TEC Digital si fuera bueno: básicamente usa caché para hacer la página más r
 - **Novedades:** notas nuevas, asignaciones nuevas, cambios de fecha y archivos nuevos desde la última vez.
 - **Documentos** más fáciles de navegar, con lo nuevo marcado.
 - **Rápido:** lo que ya viste carga al instante desde caché mientras se actualiza por detrás.
-- **Fondo de pantalla** propio (link de Wallhaven, de cualquier imagen o subida), con desenfoque tipo vidrio o de toda la imagen y opacidad ajustable.
+- **Fondo y tono:** wallpaper propio (link de Wallhaven, de cualquier imagen o subido) con desenfoque tipo vidrio o de toda la imagen, opacidad ajustable e historial de fondos guardados en caché. El tono de la interfaz se puede cambiar o sacar del wallpaper.
 - **Ctrl K** para buscar cursos, tareas o cualquier archivo de Documentos (se indexan solos en segundo plano).
 
 Lo que TEC Vegetal no hace (entregar tareas, foros, calendario…) abre la página normal de TEC Digital con un botón, y desde ahí volvés con "Volver a TEC Vegetal".
 
-No tiene servidor ni manda datos a ningún lado: todo queda en tu navegador y usa tu sesión normal de TEC Digital. (La versión de Chrome le pregunta a GitHub cada 12 h cuál es la última versión, para avisarte si hay una nueva.)
+No tiene servidor ni manda datos a ningún lado: todo queda en tu navegador y usa tu sesión normal de TEC Digital. (La versión de Chrome le pregunta a GitHub cada 12 h cuál es la última versión, para avisarte si hay una nueva. Si usás un fondo de Wallhaven, la imagen se baja de w.wallhaven.cc una vez y queda guardada.)
 
 ## Instalar
 

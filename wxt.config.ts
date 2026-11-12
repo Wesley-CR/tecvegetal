@@ -34,7 +34,8 @@ export default defineConfig({
   manifest: {
     name: 'TEC Vegetal',
     description: 'TEC Digital, pero rápido y legible.',
-    host_permissions: ['https://tecdigital.tec.ac.cr/*'],
+    // w.wallhaven.cc: solo para guardar en caché el wallpaper elegido (ver entrypoints/background.ts).
+    host_permissions: ['https://tecdigital.tec.ac.cr/*', 'https://w.wallhaven.cc/*'],
     // Manda el inicio de TEC Digital (lento: ~1 s de servidor) directo a /tecvegetal/
     // (404 instantáneo que TEC Vegetal reemplaza). `/dotlrn/index?classic` no se redirige.
     permissions: ['declarativeNetRequestWithHostAccess'],

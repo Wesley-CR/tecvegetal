@@ -71,10 +71,13 @@
         <Icon name="theme" /><span class="sr-only">{themeLabel[theme]}</span>
       </button>
 
+      <button class="icon" onclick={onbackground} title="Fondo y tono">
+        <Icon name="image" /><span class="sr-only">Fondo y tono</span>
+      </button>
+
       <Menu label="Más: comunidades, cátedras y semestres anteriores" width={320}>
         {#snippet trigger()}<span class="lbl">Más</span><Icon name="chevron" size={14} />{/snippet}
         {#snippet children(close)}
-          <button class="item" onclick={() => { close(); onbackground(); }}><Icon name="image" />Fondo de pantalla</button>
           {#each personal as l (l.href)}
             <a href={l.href} onclick={close}><Icon name={/calendar/.test(l.href) ? 'calendar' : 'folder'} />{l.text}</a>
           {/each}
