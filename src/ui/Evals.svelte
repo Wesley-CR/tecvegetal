@@ -39,7 +39,7 @@
 {#if !data}
   <p class="muted">{res.error ? `No se pudo cargar: ${res.error}` : 'Cargando evaluaciones…'}</p>
 {:else}
-  <section class="calc" aria-labelledby="calc-title">
+  <section class="calc glass" aria-labelledby="calc-title">
     <div class="calc-head">
       <h2 id="calc-title">Nota</h2>
       <p class="updated muted">

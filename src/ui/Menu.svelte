@@ -45,7 +45,7 @@
   {@render trigger()}
 </button>
 {#if open}
-  <div bind:this={panel} class="menu" style="top:{pos.top}px;left:{pos.left}px;width:{width}px" role="menu">
+  <div bind:this={panel} class="menu solid" style="top:{pos.top}px;left:{pos.left}px;width:{width}px" role="menu">
     {@render children(close)}
   </div>
 {/if}

@@ -11,6 +11,7 @@
     calendar: 'M4 6h12v10H4zM4 9h12M7.5 3.5v3M12.5 3.5v3',
     folder: 'M3 6a1 1 0 0 1 1-1h3.5l1.5 1.8h7a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z',
     doc: 'M6 3h5.5L15 6.5V17H6zM11 3v4h4',
+    image: 'M3.5 4.5h13v11h-13zM3.5 13l4-4 3.5 3.5 2-2 3.5 3.5M12.5 8a1 1 0 1 0 0-.01',
   } as const;
   export type IconName = keyof typeof PATHS;
 </script>

@@ -118,7 +118,7 @@
 {:else if !items.length}
   <p class="muted">{q ? 'Nada coincide con el filtro.' : 'Esta carpeta está vacía.'}</p>
 {:else}
-  <div class="files">
+  <div class="files glass">
   <div class="item head" role="group" aria-label="Ordenar">
     {#each COLS as col (col.key)}
       {@const on = sort?.key === col.key}

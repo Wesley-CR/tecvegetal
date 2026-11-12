@@ -19,7 +19,7 @@ const fontFace = (f: FontUrls | undefined) =>
 
 const LIGHT = `
   color-scheme: light;
-  --bg: #f2f4f7; --surface: #ffffff; --raise: #e9edf3; --line: #d9e0e9; --line-strong: #b9c4d2;
+  --bg: #f2f4f7; --surface-0: #ffffff; --raise-0: #e9edf3; --line: #d9e0e9; --line-strong: #b9c4d2;
   --text: #13233a; --muted: #56677f; --faint: #8796ab; --focus: #1f6fb2; --mark: #c48a00;
   --u-now: #c93526; --u-soon: #b76300; --u-week: #7d6f00; --u-later: #5d7190; --ok: #2f7d3d;
   --side: #e6ebf2; --sel: rgb(31 111 178 / 0.2);`;
@@ -28,14 +28,25 @@ export const globalCss = (fonts?: FontUrls) => `
 ${fontFace(fonts)}
 :root {
   color-scheme: dark;
-  --bg: #0f1b2b; --surface: #14233a; --raise: #1a2c46; --line: #22354f; --line-strong: #34496a;
+  --bg: #0f1b2b; --surface-0: #14233a; --raise-0: #1a2c46; --line: #22354f; --line-strong: #34496a;
   --text: #e6ecf4; --muted: #91a2ba; --faint: #61758f; --focus: #ffd36e; --mark: #ffd36e;
   --u-now: #ff7a6b; --u-soon: #f3a648; --u-week: #d8c860; --u-later: #7088a6; --ok: #7fd18e;
   --font: "TD Atkinson", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --fs-xs: 12.5px; --fs-s: 14px; --fs-m: 15.5px; --fs-l: 18px; --fs-xl: 22px; --fs-xxl: 28px;
   --side: #0c1724; --sel: rgb(255 211 110 / 0.28);
   --r: 6px;
+  --surface: var(--surface-0); --raise: var(--raise-0);
 }
+/* Fondo personalizado (ver lib/background.svelte.ts). */
+:root[data-bg] {
+  --surface: color-mix(in srgb, var(--surface-0) var(--panel-a, 80%), transparent);
+  --raise: color-mix(in srgb, var(--raise-0) var(--panel-a, 80%), transparent);
+}
+#tv-bg { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; opacity: var(--bg-opacity, 0.7); pointer-events: none; user-select: none; }
+:root[data-bg="image"] #tv-bg { filter: blur(var(--bg-blur)); transform: scale(1.08); }
+:root[data-bg="glass"] :is(.panel, .glass) { -webkit-backdrop-filter: blur(var(--bg-blur)) saturate(1.15); backdrop-filter: blur(var(--bg-blur)) saturate(1.15); }
+:root[data-bg] header.glass { background: color-mix(in srgb, var(--bg) var(--panel-a, 80%), transparent); }
+:root[data-bg] .solid { background: var(--surface-0); }
 :root[data-theme="light"] {${LIGHT} }
 @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {${LIGHT} } }
 

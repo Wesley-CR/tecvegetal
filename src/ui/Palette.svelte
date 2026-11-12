@@ -135,7 +135,7 @@
 </script>
 
 <div class="scrim" onclick={onclose} role="presentation"></div>
-<div class="box" role="dialog" aria-modal="true" aria-label="Buscar en TEC Vegetal">
+<div class="box solid" role="dialog" aria-modal="true" aria-label="Buscar en TEC Vegetal">
   <div class="field">
     <Icon name="search" size={18} />
     <input

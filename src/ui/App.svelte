@@ -8,11 +8,13 @@
   import Home from './Home.svelte';
   import CoursePage from './CoursePage.svelte';
   import Palette from './Palette.svelte';
+  import BgSettings from './BgSettings.svelte';
   import { showFatal } from '../lib/fatal';
   import { crawlDocs } from '../lib/data/crawl';
   import { loadChanges } from '../lib/data/changes.svelte';
 
   let paletteOpen = $state(false);
+  let bgOpen = $state(false);
 
   onMount(() => {
     courses.load({ priority: true });
@@ -57,7 +59,7 @@
 </script>
 
 <svelte:boundary onerror={(e) => showFatal(e)}>
-<TopBar onsearch={() => (paletteOpen = true)} />
+<TopBar onsearch={() => (paletteOpen = true)} onbackground={() => (bgOpen = true)} />
 
 <main>
     {#if session.down && !session.expired}
@@ -84,6 +86,9 @@
     {/if}
 </main>
 
+{#if bgOpen}
+  <BgSettings onclose={() => (bgOpen = false)} />
+{/if}
 {#if paletteOpen}
   <Palette onclose={() => (paletteOpen = false)} />
 {/if}

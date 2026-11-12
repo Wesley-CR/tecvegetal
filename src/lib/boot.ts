@@ -1,4 +1,5 @@
 import { flushSync, mount } from 'svelte';
+import { applyBg } from './background.svelte';
 import App from '../ui/App.svelte';
 import { globalCss, type FontUrls } from '../ui/global.css.ts';
 import { browser } from 'wxt/browser';
@@ -90,6 +91,7 @@ function takeOver(): void {
     if (r && /SessionExpired|ServerDown|TooManyRequests/.test(r.constructor?.name ?? '')) return;
     showFatal(r);
   });
+  try { applyBg(); } catch { /* el fondo es opcional */ }
   startClock();
   installLinkInterceptor(document);
   // Montar dentro de flushSync: en Firefox las microtareas del content script

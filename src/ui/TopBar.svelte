@@ -6,8 +6,12 @@
   import Icon from './Icon.svelte';
   import Menu from './Menu.svelte';
   import { changes } from '../lib/data/changes.svelte';
+  import { update, checkForUpdate, RELEASES_URL } from '../lib/update.svelte';
+  import { onMount } from 'svelte';
 
-  let { onsearch }: { onsearch: () => void } = $props();
+  let { onsearch, onbackground }: { onsearch: () => void; onbackground: () => void } = $props();
+
+  onMount(() => { void checkForUpdate(); });
 
   let refreshing = $state(false);
   async function refresh() {
@@ -37,7 +41,7 @@
   const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
 </script>
 
-<header>
+<header class="glass">
   <div class="wrap bar">
     <a class="mark" href={href.home()} aria-label="TEC Vegetal, ir al inicio">tec<span>Vegetal</span></a>
 
@@ -50,6 +54,11 @@
     </nav>
 
     <div class="tools">
+      {#if update.latest}
+        <a class="update" href={RELEASES_URL} target="_blank" rel="noopener" title="Bajá el zip nuevo, descomprimilo encima de la carpeta de la extensión y recargala en chrome://extensions">
+          Versión {update.latest} disponible
+        </a>
+      {/if}
       <button class="search" onclick={onsearch} title="Buscar cursos, tareas o archivos">
         <Icon name="search" /><span class="lbl">Buscar</span><kbd>{isMac ? '⌘' : 'Ctrl'} K</kbd>
       </button>
@@ -65,6 +74,7 @@
       <Menu label="Más: comunidades, cátedras y semestres anteriores" width={320}>
         {#snippet trigger()}<span class="lbl">Más</span><Icon name="chevron" size={14} />{/snippet}
         {#snippet children(close)}
+          <button class="item" onclick={() => { close(); onbackground(); }}><Icon name="image" />Fondo de pantalla</button>
           {#each personal as l (l.href)}
             <a href={l.href} onclick={close}><Icon name={/calendar/.test(l.href) ? 'calendar' : 'folder'} />{l.text}</a>
           {/each}
@@ -131,6 +141,8 @@
 
 <style>
   header { position: sticky; top: 0; z-index: 20; height: 58px; background: color-mix(in srgb, var(--bg) 92%, transparent); border-bottom: 1px solid var(--line); }
+  .update { flex: none; padding: 5px 10px; border-radius: 999px; font-size: var(--fs-xs); font-weight: 700; color: var(--bg); background: var(--ok); white-space: nowrap; }
+  .update:hover { text-decoration: none; filter: brightness(1.08); }
   .bar { height: 100%; display: flex; align-items: center; gap: 22px; }
   .mark { font-weight: 800; font-size: 21px; letter-spacing: -0.02em; flex: none; }
   .mark:hover { text-decoration: none; }
