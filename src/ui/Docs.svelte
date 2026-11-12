@@ -33,9 +33,46 @@
     it.isNew || (prevSeen != null && it.modified != null && it.modified > prevSeen);
 
   let q = $state('');
-  const items = $derived(
-    (folder?.items ?? []).filter((it) => !q || it.name.toLowerCase().includes(q.trim().toLowerCase())),
-  );
+
+  // Orden por columna (clic en el encabezado; otro clic invierte). Sin orden =
+  // el que trae TEC Digital. Las carpetas siempre van primero, como en un explorador.
+  type SortKey = 'type' | 'name' | 'meta' | 'date';
+  const SORT_KEY = 'tecvegetal:docs-sort';
+  const readSort = (): { key: SortKey; dir: 1 | -1 } | null => {
+    try { const v = JSON.parse(localStorage.getItem(SORT_KEY) ?? 'null'); return v && ['type', 'name', 'meta', 'date'].includes(v.key) ? v : null; } catch { return null; }
+  };
+  let sort = $state(readSort());
+  function sortBy(key: SortKey) {
+    // La fecha arranca de más nueva a más vieja; lo demás, A→Z.
+    const first = key === 'date' ? -1 : 1;
+    if (sort?.key !== key) sort = { key, dir: first };
+    else if (sort.dir === first) sort = { key, dir: first === 1 ? -1 : 1 };
+    else sort = null;
+    try { if (sort) localStorage.setItem(SORT_KEY, JSON.stringify(sort)); else localStorage.removeItem(SORT_KEY); } catch { /* nada */ }
+  }
+  const collator = new Intl.Collator('es', { numeric: true, sensitivity: 'base' });
+  const metaOf = (it: DocItem) => (it.kind === 'folder' ? String(it.count ?? '').padStart(6, '0') : it.author);
+  function compare(a: DocItem, b: DocItem, key: SortKey): number {
+    switch (key) {
+      case 'type': return collator.compare(ext(a), ext(b));
+      case 'name': return collator.compare(a.name, b.name);
+      case 'meta': return collator.compare(metaOf(a), metaOf(b));
+      case 'date': return (a.modified ?? 0) - (b.modified ?? 0);
+    }
+  }
+  const items = $derived.by(() => {
+    const needle = q.trim().toLowerCase();
+    const list = (folder?.items ?? []).filter((it) => !needle || it.name.toLowerCase().includes(needle));
+    const s = sort;
+    if (!s) return list;
+    return [...list].sort((a, b) => Number(b.kind === 'folder') - Number(a.kind === 'folder') || s.dir * compare(a, b, s.key) || collator.compare(a.name, b.name));
+  });
+  const COLS: { key: SortKey; label: string }[] = [
+    { key: 'type', label: 'Tipo' },
+    { key: 'name', label: 'Nombre' },
+    { key: 'meta', label: 'Autor' },
+    { key: 'date', label: 'Fecha' },
+  ];
 
   const folderHref = (fid: string) => href.docs(course, fid);
   const ext = (it: DocItem) => (/\.([a-z0-9]{1,5})$/i.exec(it.name)?.[1] ?? (it.kind === 'url' ? 'link' : 'file')).toUpperCase();
@@ -81,7 +118,17 @@
 {:else if !items.length}
   <p class="muted">{q ? 'Nada coincide con el filtro.' : 'Esta carpeta está vacía.'}</p>
 {:else}
-  <ul class="files">
+  <div class="files">
+  <div class="item head" role="group" aria-label="Ordenar">
+    {#each COLS as col (col.key)}
+      {@const on = sort?.key === col.key}
+      <button class="sort {col.key}" class:on onclick={() => sortBy(col.key)} title={`Ordenar por ${col.label.toLowerCase()}`} aria-pressed={on}>
+        {col.label}<span class="arrow" aria-hidden="true">{on ? (sort?.dir === 1 ? '↑' : '↓') : '↕'}</span>
+        {#if on}<span class="sr-only">{sort?.dir === 1 ? ', ascendente' : ', descendente'}</span>{/if}
+      </button>
+    {/each}
+  </div>
+  <ul>
     {#each items as it (it.id)}
       {@const fresh = isNew(it)}
       <li class:fresh>
@@ -103,6 +150,7 @@
       </li>
     {/each}
   </ul>
+  </div>
 {/if}
 
 <style>
@@ -112,8 +160,17 @@
   .crumbs span[aria-hidden] { color: var(--faint); }
   .here { font-weight: 650; }
   .filter input { width: 260px; max-width: 100%; padding: 7px 10px; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); color: var(--text); font: inherit; font-size: var(--fs-s); }
-  .files { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
-  .files li + li { border-top: 1px solid var(--line); }
+  .files { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+  .files ul { list-style: none; margin: 0; padding: 0; }
+  .files li { border-top: 1px solid var(--line); }
+  .head { padding-top: 9px; padding-bottom: 9px; }
+  .head:hover { background: none; }
+  .sort { display: inline-flex; align-items: center; gap: 4px; min-width: 0; padding: 0; border: 0; background: none; color: var(--faint); font: inherit; font-size: var(--fs-xs); font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .sort:hover, .sort.on { color: var(--text); }
+  .sort.type { justify-self: center; }
+  .sort.date { justify-self: end; }
+  .arrow { font-size: 11px; opacity: 0.45; }
+  .sort.on .arrow { opacity: 1; color: var(--c); }
   .item { display: grid; grid-template-columns: 40px minmax(0, 1fr) minmax(0, 220px) 70px; align-items: center; gap: 14px; padding: 12px 20px; }
   .item:hover { background: var(--raise); text-decoration: none; }
   .ico { width: 20px; height: 20px; color: var(--c); justify-self: center; }
@@ -122,5 +179,5 @@
   .meta, .date { font-size: var(--fs-s); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .date { text-align: right; }
   .new { margin-left: 8px; font-size: 11px; font-weight: 700; color: var(--mark); vertical-align: 1px; }
-  @media (max-width: 720px) { .item { grid-template-columns: 34px minmax(0, 1fr) 60px; } .meta { display: none; } }
+  @media (max-width: 720px) { .item { grid-template-columns: 34px minmax(0, 1fr) 60px; } .meta, .sort.meta { display: none; } }
 </style>

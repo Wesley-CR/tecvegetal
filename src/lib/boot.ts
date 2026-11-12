@@ -1,4 +1,4 @@
-import { mount } from 'svelte';
+import { flushSync, mount } from 'svelte';
 import App from '../ui/App.svelte';
 import { globalCss, type FontUrls } from '../ui/global.css.ts';
 import { browser } from 'wxt/browser';
@@ -92,7 +92,10 @@ function takeOver(): void {
   });
   startClock();
   installLinkInterceptor(document);
-  mount(App, { target: document.body! });
+  // Montar dentro de flushSync: en Firefox las microtareas del content script
+  // pueden correr a mitad del montaje, Svelte se queda sin batch y revienta con
+  // "can't access property transfer_effects". Así no se agenda nada a mitad.
+  flushSync(() => mount(App, { target: document.body! }));
   // Red de seguridad: si a los 4 s no hay nada visible, avisar en vez de quedar en blanco.
   setTimeout(() => {
     if (!document.querySelector('header')) showFatal(new Error('La app no llegó a dibujarse (no hay barra superior a los 4 s).'));
