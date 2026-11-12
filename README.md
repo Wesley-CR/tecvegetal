@@ -4,7 +4,7 @@ TEC Digital si fuera bueno: básicamente usa caché para hacer la página más r
 
 - **Pendientes de todos tus cursos** en un solo lugar, agrupados por materia y con cuánto falta para cada entrega.
 - **Planificador de 14 días** para ver qué se viene.
-- **Notas por curso** con barra de progreso y **cuánto necesitás para pasar** (67.6) en lo que falta, con un simulador de nota final.
+- **Notas por curso** con barra de progreso y **cuánto necesitás para pasar** (67.6) en lo que falta, con un simulador donde ponés cuánto creés que te sacás en cada cosa que falta.
 - **Novedades:** notas nuevas, asignaciones nuevas, cambios de fecha y archivos nuevos desde la última vez.
 - **Documentos** más fáciles de navegar, con lo nuevo marcado.
 - **Rápido:** lo que ya viste carga al instante desde caché mientras se actualiza por detrás.

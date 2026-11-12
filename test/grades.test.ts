@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluatedWeight, finalIf, project } from '../src/lib/grades';
+import { evaluatedWeight, finalIf, pendingItems, project, simulate } from '../src/lib/grades';
 import type { Assignment, Category } from '../src/lib/types';
 
 const a = (grade: number | null, outOf = 100): Assignment => ({
@@ -51,5 +51,22 @@ describe('calculadora de nota', () => {
   it('todo evaluado y no llegó', () => {
     const p = project({ categories: [cat(100, 50, [50])], total: 50, totalOf: 100 });
     expect(p.outlook).toBe('done');
+  });
+
+  it('lo que falta, asignación por asignación', () => {
+    const data = { categories: [cat(25, 11.9, [95.2, null]), cat(15, null, [null, null]), { ...cat(60, null, []), id: 'p', name: 'Proyecto' }], total: 11.9, totalOf: 100 };
+    const items = pendingItems(data);
+    expect(items.map((i) => Math.round(i.worth * 10) / 10)).toEqual([12.5, 7.5, 7.5, 60]);
+    expect(items[3]).toMatchObject({ name: 'Resto de Proyecto', rest: true });
+  });
+
+  it('simulador: vacías → cuánto necesitás en esas; todo lleno → nota final', () => {
+    const items = [{ key: 'a', worth: 40 }, { key: 'b', worth: 40 }].map((x) => ({ ...x, name: '', category: '', rest: false }));
+    expect(simulate(20, items, {})).toMatchObject({ kind: 'need', pct: 60 });
+    expect(simulate(20, items, { a: 90 })).toMatchObject({ kind: 'need', pct: 29 });
+    expect(simulate(20, items, { a: 100, b: 100 })).toEqual({ kind: 'final', final: 100 });
+    expect(simulate(20, items, { a: 0 })).toMatchObject({ kind: 'short', max: 60 });
+    expect(simulate(20, items, { a: 100, b: undefined })).toMatchObject({ kind: 'need', pct: 19 });
+    expect(simulate(70, items, {})).toMatchObject({ kind: 'safe' });
   });
 });
