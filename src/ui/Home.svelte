@@ -7,6 +7,7 @@
   import { href } from '../lib/router.svelte';
   import AssignmentRow from './AssignmentRow.svelte';
   import DueRail from './DueRail.svelte';
+  import Changes from './Changes.svelte';
   import CourseList from './CourseList.svelte';
 
   const now = $derived(clock.now);
@@ -46,6 +47,8 @@
   </header>
 
   <DueRail items={pending} {now} />
+
+  <Changes />
 
   <div class="cols">
   <section class="block" aria-labelledby="courses-title">

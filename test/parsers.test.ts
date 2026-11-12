@@ -119,3 +119,36 @@ describe('documentos', () => {
     expect(f.items[1].href).toBe('/dotlrn/classes/MA/MA2404/S-2-2026.SJ.MA2404.40/file-storage/view/Apuntes%2FGu%C3%ADa.pdf');
   });
 });
+
+describe('semestre actual', () => {
+  // Estructura real del árbol de TEC Digital (16/10/2026).
+  const tree = (extraBefore = '') => html(`
+    ${extraBefore}
+    <ul class="mktree"><li id="dotlrn-main-dotlrn_class_instance"><h2>Cursos</h2>
+    <ul id="tree-dotlrn_class_instance">
+      <li name="current"> SEMESTRE 2 2026<ul>
+        <li><a href="/dotlrn/classes/CA/IC6831/S-2-2026.SJ.IC6831.40/">Aseguramiento de la calidad del software GR 40 </a></li>
+      </ul></li>
+      <li> SEMESTRE 1 2026<ul>
+        <li><a href="/dotlrn/classes/CA/IC4302/S-1-2026.AL.IC4302.20/">Bases de datos II GR 20 </a></li>
+      </ul></li>
+    </ul></li></ul>`);
+
+  it('usa el nodo marcado como current', () => {
+    const d = parseCourses(tree());
+    expect(d.current.map((c) => c.code)).toEqual(['IC6831']);
+    expect(d.past[0].courses.map((c) => c.code)).toEqual(['IC4302']);
+  });
+
+  it('ignora links a cursos viejos fuera del árbol (regresión: pendientes de cursos anteriores)', () => {
+    const d = parseCourses(tree('<div id="notifications"><a href="/dotlrn/classes/CA/IC4302/S-1-2026.AL.IC4302.20/">Bases de datos II</a></div>'));
+    expect(d.current.map((c) => c.code)).toEqual(['IC6831']);
+  });
+
+  it('en un curso anterior nada queda pendiente', async () => {
+    const { statusOf } = await import('../src/lib/parse/evals');
+    const a = { id: '1', name: 'x', dueAt: Date.now() + 86400_000, dueText: '', lateAllowed: true, canSubmit: true, submitted: false, submissionText: '', submissionLinks: [], grade: null, outOf: 100, weighted: null, description: '', links: [], value: '', groupSize: '' };
+    expect(statusOf(a, Date.now())).toBe('pending');
+    expect(statusOf(a, Date.now(), { pastCourse: true })).toBe('closed');
+  });
+});

@@ -5,6 +5,7 @@
   import { courses } from './state.svelte';
   import Icon from './Icon.svelte';
   import Menu from './Menu.svelte';
+  import { changes } from '../lib/data/changes.svelte';
 
   let { onsearch }: { onsearch: () => void } = $props();
 
@@ -43,7 +44,7 @@
     <nav class="courses" aria-label="Cursos del semestre">
       {#each data?.current ?? [] as c, i (c.id)}
         <a class="chip c" style={courseVars(i)} href={href.course(c)} title={c.name} aria-current={activeId === c.id ? 'page' : undefined}>
-          <i aria-hidden="true"></i>{c.code}
+          <i aria-hidden="true"></i>{c.code}{#if changes.list.some((x) => x.courseId === c.id)}<span class="new" title="Hay novedades"><span class="sr-only">, hay novedades</span></span>{/if}
         </a>
       {/each}
     </nav>
@@ -136,6 +137,7 @@
   .mark span { color: var(--ok); }
   .courses { display: flex; gap: 4px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
   .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; font-size: var(--fs-s); font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .chip .new { width: 6px; height: 6px; border-radius: 50%; background: var(--mark); margin-left: -2px; align-self: flex-start; margin-top: 2px; }
   .chip i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
   .chip:hover { color: var(--text); background: var(--raise); text-decoration: none; }
   .chip[aria-current='page'] { color: var(--text); background: var(--raise); }

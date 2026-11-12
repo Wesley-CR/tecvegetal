@@ -5,6 +5,7 @@
   import { clock } from '../lib/clock.svelte';
   import { href } from '../lib/router.svelte';
   import { courses } from './state.svelte';
+  import { project } from '../lib/grades';
 
   const data = $derived(courses.data);
   const pendingOf = (assignments: { dueAt: number | null }[] | undefined) => assignments?.length ?? 0;
@@ -37,6 +38,12 @@
           {/if}
         </div>
         <span class="bar" aria-hidden="true"><span style="width:{pct}%"></span></span>
+        {#if e}
+          {@const p = project(e)}
+          {#if p.outlook === 'possible'}<p class="need">Necesitás {p.neededPct}% en lo que falta</p>
+          {:else if p.outlook === 'passed'}<p class="need ok">Ya pasaste</p>
+          {:else if p.outlook === 'impossible'}<p class="need warn">Ya no alcanza para pasar</p>{/if}
+        {/if}
         <div class="links">
           <a href={href.evals(c)}>Evaluaciones{#if pendingOf(pending)}<span class="pend">{pendingOf(pending)} pendientes</span>{/if}</a>
           <a href={href.docs(c)}>Documentos</a>
@@ -60,6 +67,9 @@
   .of { color: var(--muted); font-size: var(--fs-s); margin-left: 3px; }
   .bar { grid-column: 1 / -1; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
   .bar span { display: block; height: 100%; border-radius: 3px; background: var(--c); }
+  .need { grid-column: 1 / -1; margin: -2px 0 0; font-size: var(--fs-s); color: var(--muted); }
+  .need.ok { color: var(--ok); }
+  .need.warn { color: var(--u-soon); }
   .links { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: var(--fs-s); color: var(--muted); }
   .links a:hover { color: var(--text); }
   .pend { margin-left: 8px; color: var(--text); font-weight: 600; }

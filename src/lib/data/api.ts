@@ -8,6 +8,8 @@ import type { Course, CoursesData, EvalsData, Folder } from '../types';
 import { getDoc, getJson, getText } from './net';
 import { resource } from './resource.svelte';
 import * as store from './store';
+import { diffEvals, diffFolder } from '../changes';
+import { addChanges } from './changes.svelte';
 
 // TTLs: cuánto tiempo un dato cacheado se considera fresco antes de revalidar.
 // Siempre se pinta el caché primero; el TTL solo decide si además se refetchea.
@@ -37,7 +39,7 @@ export const evalsRes = (c: Course) =>
   resource<EvalsData>(`evals:${c.id}`, TTL.evals, async (p) => {
     const url = evalsUrl(c);
     return parseEvals(await getDoc(url, p), new URL(url, location.origin).href);
-  });
+  }, (prev, next) => { addChanges(diffEvals(c, prev, next)); });
 
 export const rootFolderRes = (c: Course) =>
   resource<string>(`fsroot:${c.id}`, TTL.folderRoot, async (p) => {
@@ -52,7 +54,7 @@ export const folderRes = (c: Course, folderId: string) =>
     // La API no da IDs de los ancestros: guardamos padre→hijo para armar el camino.
     for (const it of f.items) if (it.kind === 'folder') store.set(`fsparent:${it.id}`, { id: f.id, name: f.name });
     return f;
-  });
+  }, (prev, next) => { addChanges(diffFolder(c, prev, next)); });
 
 /** Ancestros de una carpeta (raíz primero), según lo navegado hasta ahora. */
 export async function folderAncestors(folderId: string, rootId: string | undefined): Promise<{ id: string; name: string }[]> {

@@ -1,6 +1,6 @@
 {
   "name": "tecvegetal",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "TEC Digital, pero rápido y legible",
   "scripts": {
     "dev": "wxt",

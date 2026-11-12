@@ -9,11 +9,14 @@
   import CoursePage from './CoursePage.svelte';
   import Palette from './Palette.svelte';
   import { showFatal } from '../lib/fatal';
+  import { crawlDocs } from '../lib/data/crawl';
+  import { loadChanges } from '../lib/data/changes.svelte';
 
   let paletteOpen = $state(false);
 
   onMount(() => {
     courses.load({ priority: true });
+    loadChanges();
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
@@ -35,6 +38,8 @@
       const current = courses.data?.current ?? [];
       for (const c of current) evalsRes(c).load();
       for (const c of current) rootFolderRes(c).load();
+      // Indexar Documentos para Ctrl+K, sin competir con la carga inicial.
+      if (current.length) setTimeout(() => crawlDocs(current), 8000);
     });
   });
 

@@ -126,15 +126,18 @@ function dedupe(ls: Link[]): Link[] {
   return ls.filter((l) => !seen.has(l.href) && seen.add(l.href));
 }
 
-export type Status = 'graded' | 'submitted' | 'pending' | 'late' | 'missed' | 'offline' | 'nodate';
+export type Status = 'graded' | 'submitted' | 'pending' | 'late' | 'missed' | 'offline' | 'nodate' | 'closed';
 
 /**
  * El widget de entrega sigue visible en asignaciones vencidas, así que "tiene
  * dropzone" no significa "pendiente". Esto decide el estado real.
  */
-export function statusOf(a: Assignment, now: number): Status {
+export function statusOf(a: Assignment, now: number, opts: { pastCourse?: boolean } = {}): Status {
   if (a.grade != null) return 'graded';
   if (a.submitted) return 'submitted';
+  // En un curso de un semestre que ya terminó nada queda pendiente, aunque el
+  // widget de entrega siga abierto o la fecha sea absurda.
+  if (opts.pastCourse) return a.canSubmit ? 'closed' : 'offline';
   if (!a.canSubmit) return 'offline';
   if (a.dueAt == null) return 'nodate';
   if (a.dueAt > now) return 'pending';
@@ -149,4 +152,5 @@ export const STATUS_LABEL: Record<Status, string> = {
   missed: 'Vencida',
   offline: 'Sin entrega digital',
   nodate: 'Sin fecha',
+  closed: 'No entregada',
 };

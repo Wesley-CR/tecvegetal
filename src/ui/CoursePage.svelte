@@ -3,6 +3,7 @@
   import type { Route } from '../lib/router.svelte';
   import { courseHomeRes, evalsRes, rootFolderRes } from '../lib/data/api';
   import { href } from '../lib/router.svelte';
+  import { dismissCourse, loadChanges } from '../lib/data/changes.svelte';
   import { courseVars } from '../lib/colors';
   import { periodLabel } from '../lib/parse/courses';
   import { findCourse } from './state.svelte';
@@ -17,6 +18,14 @@
   const course = $derived(ref?.course);
   const evals = $derived(course ? evalsRes(course) : null);
   const home = $derived(course ? courseHomeRes(course) : null);
+
+  // Entrar al curso cuenta como "visto": sus novedades se limpian a los 3 s.
+  $effect(() => {
+    const id = course?.id;
+    if (!id) return;
+    const t = setTimeout(() => { loadChanges().then(() => dismissCourse(id)); }, 3000);
+    return () => clearTimeout(t);
+  });
 
   const loadKey = $derived(course ? `${course.id}:${route.tab}` : '');
   $effect(() => {
@@ -64,9 +73,9 @@
       </nav>
 
       {#if route.tab === 'resumen'}
-        <Summary {course} index={ref.index} />
+        <Summary {course} index={ref.index} past={!ref.current} />
       {:else if route.tab === 'evals'}
-        <Evals {course} index={ref.index} />
+        <Evals {course} index={ref.index} past={!ref.current} />
       {:else}
         <Docs {course} folderId={route.folderId} />
       {/if}

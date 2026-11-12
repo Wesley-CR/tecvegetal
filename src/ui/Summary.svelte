@@ -5,7 +5,7 @@
   import type { Course } from '../lib/types';
   import AssignmentRow from './AssignmentRow.svelte';
 
-  let { course, index }: { course: Course; index: number } = $props();
+  let { course, index, past = false }: { course: Course; index: number; past?: boolean } = $props();
 
   // El HTML de los portlets ya viene saneado (parse/sanitize.ts). Se vuelve a
   // parsear con DOMParser (documento inerte) y se insertan los nodos: sin
@@ -21,7 +21,7 @@
 
   const upcoming = $derived(
     (evals.data?.categories ?? [])
-      .flatMap((c) => c.assignments.map((a) => ({ a, category: c.name, status: statusOf(a, now) })))
+      .flatMap((c) => c.assignments.map((a) => ({ a, category: c.name, status: statusOf(a, now, { pastCourse: past }) })))
       .filter((x) => x.status === 'pending' || x.status === 'late')
       .sort((x, y) => (x.a.dueAt ?? Infinity) - (y.a.dueAt ?? Infinity)),
   );
@@ -51,7 +51,7 @@
           {/each}
         </ul>
       {:else}
-        <p class="muted none">Nada pendiente en este curso.</p>
+        <p class="muted none">{past ? 'Este curso es de un semestre anterior: no tiene entregas pendientes.' : 'Nada pendiente en este curso.'}</p>
       {/if}
     </section>
 

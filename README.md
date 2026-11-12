@@ -4,10 +4,11 @@ TEC Digital si fuera bueno: básicamente usa caché para hacer la página más r
 
 - **Pendientes de todos tus cursos** en un solo lugar, agrupados por materia y con cuánto falta para cada entrega.
 - **Planificador de 14 días** para ver qué se viene.
-- **Notas por curso** con barra de progreso.
+- **Notas por curso** con barra de progreso y **cuánto necesitás para pasar** (67.6) en lo que falta, con un simulador de nota final.
+- **Novedades:** notas nuevas, asignaciones nuevas, cambios de fecha y archivos nuevos desde la última vez.
 - **Documentos** más fáciles de navegar, con lo nuevo marcado.
 - **Rápido:** lo que ya viste carga al instante desde caché mientras se actualiza por detrás.
-- **Ctrl K** para buscar cursos, tareas o archivos.
+- **Ctrl K** para buscar cursos, tareas o cualquier archivo de Documentos (se indexan solos en segundo plano).
 
 Lo que TEC Vegetal no hace (entregar tareas, foros, calendario…) abre la página normal de TEC Digital con un botón, y desde ahí volvés con "Volver a TEC Vegetal".
 

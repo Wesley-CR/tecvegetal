@@ -36,13 +36,19 @@ export function periodLabel(period: string): string {
 }
 
 /**
- * El árbol de "Grupos" del inicio lista los cursos agrupados por periodo, el más
- * reciente primero. Usamos ese orden en vez de adivinar cuál periodo es "actual".
+ * Cursos del árbol "Cursos" del inicio (#tree-dotlrn_class_instance), agrupados
+ * por periodo. El semestre actual es el nodo que TEC Digital marca con
+ * name="current"; si no viene marcado, el primero del árbol.
+ *
+ * Solo se mira ese árbol: el resto de la página (notificaciones, avisos) puede
+ * tener links a cursos viejos, y antes el primero que apareciera en cualquier
+ * lado decidía cuál era el "semestre actual".
  */
 export function parseCourses(doc: Document): CoursesData {
-  const groups = new Map<string, { label: string; courses: Course[] }>();
+  const tree = doc.querySelector('#tree-dotlrn_class_instance') ?? doc;
+  const groups = new Map<string, { label: string; courses: Course[]; current: boolean }>();
   const seen = new Set<string>();
-  for (const a of doc.querySelectorAll('a[href*="/dotlrn/classes/"]')) {
+  for (const a of tree.querySelectorAll('a[href*="/dotlrn/classes/"]')) {
     let path: string;
     try { path = new URL(a.getAttribute('href') ?? '', 'https://x').pathname; } catch { continue; }
     const c = courseFromPath(path, textWithoutIcons(a));
@@ -51,15 +57,20 @@ export function parseCourses(doc: Document): CoursesData {
     if (path.replace(/\/$/, '') !== c.base.replace(/\/$/, '')) continue;
     seen.add(c.id);
     const key = c.period;
-    if (!groups.has(key)) groups.set(key, { label: groupLabel(a) || periodLabel(c.period), courses: [] });
+    if (!groups.has(key)) {
+      const node = a.closest('ul')?.closest('li');
+      groups.set(key, { label: groupLabel(a) || periodLabel(c.period), courses: [], current: node?.getAttribute('name') === 'current' });
+    }
     groups.get(key)!.courses.push(c);
   }
   const all = [...groups.values()];
-  const [first, ...rest] = all;
+  const marked = all.filter((g) => g.current);
+  const currentGroups = marked.length ? marked : all.slice(0, 1);
+  const past = all.filter((g) => !currentGroups.includes(g));
   return {
-    current: first?.courses ?? [],
-    currentLabel: first ? prettyLabel(first.label) : '',
-    past: rest.map((g) => ({ label: prettyLabel(g.label), courses: g.courses })),
+    current: currentGroups.flatMap((g) => g.courses),
+    currentLabel: currentGroups.map((g) => prettyLabel(g.label)).join(' + '),
+    past: past.map((g) => ({ label: prettyLabel(g.label), courses: g.courses })),
   };
 }
 

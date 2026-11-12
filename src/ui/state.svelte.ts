@@ -18,8 +18,10 @@ export function findCourse(id: string, base?: string): CourseRef | null {
       if (c) return { course: c, index: -1, current: false };
     }
   }
+  // Mientras el inicio no cargó (o si el curso no está en el árbol) se asume
+  // actual: solo se marca "anterior" lo que el árbol dice que es anterior.
   const c = base ? courseFromPath(base) : null;
-  return c ? { course: c, index: -1, current: false } : null;
+  return c ? { course: c, index: -1, current: true } : null;
 }
 
 export interface Item { a: Assignment; course: Course; index: number; category: string; status: Status }

@@ -51,6 +51,8 @@ export class Resource<T> {
     readonly key: string,
     readonly ttl: number,
     private loader: (priority: boolean) => Promise<T>,
+    /** Se llama cuando llegan datos nuevos y ya había una versión anterior (para detectar novedades). */
+    private onUpdate?: (prev: T, next: T) => void,
   ) {}
 
   /** Espera antes de reintentar después de `n` fallos seguidos. */
@@ -82,6 +84,7 @@ export class Resource<T> {
       this.loading = true;
       try {
         const v = await this.loader(!!opts.priority);
+        const prev = this.#data;
         const t = Date.now();
         this.data = v;
         this.updatedAt = t;
@@ -90,6 +93,9 @@ export class Resource<T> {
         session.expired = false;
         session.down = false;
         await store.set(this.key, v, t);
+        if (prev !== undefined && this.onUpdate) {
+          try { this.onUpdate(prev, v); } catch (e) { console.warn('[TEC Vegetal] no se pudieron calcular novedades', e); }
+        }
       } catch (e) {
         this.#failures++;
         this.#failedAt = Date.now();
@@ -107,10 +113,15 @@ export class Resource<T> {
 
 const registry = new Map<string, Resource<any>>();
 
-export function resource<T>(key: string, ttl: number, loader: (priority: boolean) => Promise<T>): Resource<T> {
+export function resource<T>(
+  key: string,
+  ttl: number,
+  loader: (priority: boolean) => Promise<T>,
+  onUpdate?: (prev: T, next: T) => void,
+): Resource<T> {
   let r = registry.get(key);
   if (!r) {
-    r = new Resource<T>(key, ttl, loader);
+    r = new Resource<T>(key, ttl, loader, onUpdate);
     registry.set(key, r);
   }
   return r as Resource<T>;
