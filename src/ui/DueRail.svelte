@@ -31,7 +31,7 @@
   }
 </script>
 
-<div class="scroll">
+<div class="scroll glass">
   <ol class="rail" aria-label="Entregas de los próximos {days} días">
     {#each cols as col (col.key)}
       <li class:today={col.today} class:weekend={col.weekend} class:week-start={col.weekStart}>
@@ -66,4 +66,9 @@
   .due b { font-weight: 700; }
   .due span { color: var(--muted); }
   .due:hover { background: color-mix(in srgb, var(--c) 34%, transparent); }
+  /* Con fondo de pantalla: el planificador va sobre un panel (vidrio si aplica) y las entregas, sólidas. */
+  :global(:root[data-bg]) .scroll { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+  :global(:root[data-bg]) .rail { border: 0; }
+  :global(:root[data-bg]) .due { background: color-mix(in srgb, var(--c) 24%, var(--surface-0)); }
+  :global(:root[data-bg]) .due:hover { background: color-mix(in srgb, var(--c) 38%, var(--surface-0)); }
 </style>

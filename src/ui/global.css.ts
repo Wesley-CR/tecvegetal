@@ -57,9 +57,24 @@ ${fontFace(fonts)}
 }
 :root[data-tint][data-theme="light"] {${TINT_LIGHT} }
 @media (prefers-color-scheme: light) { :root[data-tint]:not([data-theme="dark"]) {${TINT_LIGHT} } }
-:root[data-bg="glass"] :is(.panel, .glass) { -webkit-backdrop-filter: blur(var(--bg-blur)) saturate(1.15); backdrop-filter: blur(var(--bg-blur)) saturate(1.15); }
-:root[data-bg] header.glass { background: color-mix(in srgb, var(--bg) var(--panel-a, 80%), transparent); }
+/* Lo que se ve a través de los paneles se oscurece (o aclara en tema claro): así
+   el texto contrasta aunque el wallpaper sea muy claro o muy chillón. */
+:root[data-bg] { --glass-dim: brightness(0.55); }
+:root[data-bg][data-theme="light"] { --glass-dim: brightness(1.35); }
+@media (prefers-color-scheme: light) { :root[data-bg]:not([data-theme="dark"]) { --glass-dim: brightness(1.35); } }
+:root[data-bg] :is(.panel, .glass) { -webkit-backdrop-filter: var(--glass-dim); backdrop-filter: var(--glass-dim); }
+:root[data-bg="glass"] :is(.panel, .glass) { -webkit-backdrop-filter: blur(var(--bg-blur)) saturate(1.15) var(--glass-dim); backdrop-filter: blur(var(--bg-blur)) saturate(1.15) var(--glass-dim); }
+/* La barra de arriba nunca queda muy transparente: ahí van los cursos y botones. */
+:root[data-bg] header.glass { background: color-mix(in srgb, var(--bg) max(var(--panel-a, 80%), 82%), transparent); }
 :root[data-bg] .solid { background: var(--surface-0); }
+/* Texto que queda directo sobre la imagen (títulos, subtítulos, pestañas): un halo
+   suave para que se lea sin ponerle caja. Dentro de paneles no hace falta. */
+:root[data-bg] { --halo: 0 1px 2px rgb(0 0 0 / 0.7), 0 0 14px rgb(0 0 0 / 0.45); }
+:root[data-bg][data-theme="light"] { --halo: 0 1px 2px rgb(255 255 255 / 0.8), 0 0 14px rgb(255 255 255 / 0.6); }
+@media (prefers-color-scheme: light) { :root[data-bg]:not([data-theme="dark"]) { --halo: 0 1px 2px rgb(255 255 255 / 0.8), 0 0 14px rgb(255 255 255 / 0.6); } }
+:root[data-bg] main { text-shadow: var(--halo); }
+:root[data-bg] :is(.panel, .glass, .solid) { text-shadow: none; }
+:root[data-bg] main :is(.head p, .muted):not(:is(.panel, .glass, .solid) *) { color: color-mix(in srgb, var(--text) 88%, transparent); }
 :root[data-theme="light"] {${LIGHT} }
 @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {${LIGHT} } }
 
