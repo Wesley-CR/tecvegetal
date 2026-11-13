@@ -84,6 +84,8 @@ function yesChecked(el: Element | undefined): boolean {
   return !!first && (first.checked || first.hasAttribute('checked'));
 }
 
+const positive = (n: number | null) => (n != null && n > 0 ? n : null);
+
 export function parseAssignment(el: Element, pageUrl: string): Assignment {
   const f = fields(el);
   const dueEl = find(f, 'fecha de entrega');
@@ -117,7 +119,7 @@ export function parseAssignment(el: Element, pageUrl: string): Assignment {
     grade,
     outOf,
     weighted: weightedEl ? num(weightedEl.textContent) : null,
-    worth: worthRaw && worthRaw > 0 ? worthRaw : null,
+    worth: worthRaw && worthRaw > 0 ? worthRaw : positive(num(clean(find(f, 'valor de la asignacion')?.textContent))),
     description: /^no hay descripcion/i.test(norm(desc.text)) ? '' : desc.text,
     links: dedupe([...desc.links, ...links(el.querySelector('.content_delivery .col-md-6'), pageUrl)]),
     value: clean(find(f, 'valor de la asignacion')?.textContent),

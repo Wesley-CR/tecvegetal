@@ -35,8 +35,11 @@ export const courseHomeRes = (c: Course) =>
 
 export const evalsUrl = (c: Course) => `${c.base}evaluation/tda-ce-estudiante/tda-index?page_num=3`;
 
+// Subir EVALS_V cuando cambia lo que el parser saca de la página: así no se usa
+// un caché parseado con la versión vieja (le faltarían campos nuevos).
+const EVALS_V = 2;
 export const evalsRes = (c: Course) =>
-  resource<EvalsData>(`evals:${c.id}`, TTL.evals, async (p) => {
+  resource<EvalsData>(`evals${EVALS_V}:${c.id}`, TTL.evals, async (p) => {
     const url = evalsUrl(c);
     return parseEvals(await getDoc(url, p), new URL(url, location.origin).href);
   }, (prev, next) => { addChanges(diffEvals(c, prev, next)); });
