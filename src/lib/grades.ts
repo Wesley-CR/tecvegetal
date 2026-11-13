@@ -20,7 +20,13 @@ const round1 = (n: number) => Math.round(n * 10) / 10;
 export function itemWorths(cat: Category): Map<string, number> | null {
   const w = cat.weight ?? 0;
   const items = cat.assignments;
-  if (!w || !items.length || items.some((a) => !a.outOf || a.outOf <= 0)) return null;
+  if (!w || !items.length) return null;
+  // Lo más confiable: el TEC dice cuánto vale cada una en el encabezado.
+  if (items.every((a) => a.worth && a.worth > 0)) {
+    const sum = items.reduce((s, a) => s + a.worth!, 0);
+    if (Math.abs(sum - w) <= Math.max(0.5, w * 0.02)) return new Map(items.map((a) => [a.id, (a.worth! * w) / sum]));
+  }
+  if (items.some((a) => !a.outOf || a.outOf <= 0)) return null;
   const total = items.reduce((s, a) => s + a.outOf!, 0);
   const worths = new Map(items.map((a) => [a.id, (w * a.outOf!) / total]));
   const graded = items.filter((a) => a.grade != null);

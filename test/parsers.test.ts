@@ -19,9 +19,9 @@ const HOME = `
 </ul></li></ul>
 <a href="/dotlrn/classes/CA/IC6831/S-2-2026.SJ.IC6831.40/news/item?item_id=1">noticia</a>`;
 
-const assign = (o: { id: string; name: string; due?: string; dueAttr?: string; data?: string; grade?: string; dropzone?: boolean; late?: boolean }) => `
+const assign = (o: { id: string; name: string; due?: string; dueAttr?: string; data?: string; grade?: string; dropzone?: boolean; late?: boolean; head?: string }) => `
 <div class="container_accor" assign_id="${o.id}">
-  <div class="head_subaccord"><div><span class="assignNameText">${o.name}</span><span class="vt_grade_student">-- / 0.00</span></div></div>
+  <div class="head_subaccord"><div><span class="assignNameText">${o.name}</span><span class="vt_grade_student">${o.head ?? '-- / 0.00'}</span></div></div>
   <div class="content_delivery"><div class="row cnt_delivery_b">
     <div class="col-md-6">
       <div class="content_description row"><div class="col-md-12"><p class="title_subsection">Descripción :</p><div class="body_style">No hay descripción para la asignación</div></div></div>
@@ -150,5 +150,15 @@ describe('semestre actual', () => {
     const a = { id: '1', name: 'x', dueAt: Date.now() + 86400_000, dueText: '', lateAllowed: true, canSubmit: true, submitted: false, submissionText: '', submissionLinks: [], grade: null, outOf: 100, weighted: null, description: '', links: [], value: '', groupSize: '' };
     expect(statusOf(a, Date.now())).toBe('pending');
     expect(statusOf(a, Date.now(), { pastCourse: true })).toBe('closed');
+  });
+});
+
+describe('valor por asignación desde el encabezado', () => {
+  it('lee "16.49 / 23.00" como que vale 23; "-- / 0.00" como desconocido', async () => {
+    const { parseAssignment } = await import('../src/lib/parse/evals');
+    const el = (h: string) => { const d = document.createElement('div'); d.innerHTML = h; return d.firstElementChild!; };
+    expect(parseAssignment(el(assign({ id: '1', name: 'I parcial', grade: '71.7 / 100', head: '16.49 / 23.00' })), 'https://x/').worth).toBe(23);
+    expect(parseAssignment(el(assign({ id: '3', name: 'III parcial', head: '-- / 27.00' })), 'https://x/').worth).toBe(27);
+    expect(parseAssignment(el(assign({ id: '4', name: 'x' })), 'https://x/').worth).toBeNull();
   });
 });

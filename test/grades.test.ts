@@ -72,7 +72,9 @@ describe('calculadora de nota', () => {
 
   it('valor exacto cuando el "de cuánto" es el peso (caso real de MA2404)', () => {
     const asg = (id: string, grade: number | null, outOf: number) => ({ id, name: id, grade, outOf } as never);
-    const parciales = { id: 'p', name: 'Exámenes parciales', weight: 75, earned: 38.9, assignments: [asg('I', 16.49, 23), asg('II', 22.5, 25), asg('III', null, 27)] };
+    // Como viene del TEC de verdad: "Nota obtenida" sobre 100 y lo que vale en el encabezado.
+    const parc = (id: string, grade: number | null, worth: number) => ({ id, name: id, grade, outOf: 100, worth } as never);
+    const parciales = { id: 'p', name: 'Exámenes parciales', weight: 75, earned: 38.9, assignments: [parc('I', 71.7, 23), parc('II', 90, 25), parc('III', null, 27)] };
     const tareas = { id: 't', name: 'Asignaciones', weight: 25, earned: 16.4, assignments: [asg('1', 100, 100), asg('2', 100, 100), asg('3', 95, 100), asg('4', 65, 100), asg('5', 100, 100), asg('6', null, 100), asg('7', null, 100)] };
     const items = pendingItems({ categories: [parciales, tareas], total: 55.3, totalOf: 100 } as never);
     expect(items.map((i) => [i.key, Math.round(i.worth * 100) / 100])).toEqual([['III', 27], ['6', 3.57], ['7', 3.57]]);

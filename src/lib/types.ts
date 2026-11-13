@@ -37,6 +37,8 @@ export interface Assignment {
   grade: number | null;
   outOf: number | null;
   weighted: number | null;
+  /** Puntos del curso que vale, si el TEC lo muestra ("16.49 / 23.00" en el encabezado). */
+  worth?: number | null;
   description: string;
   links: Link[];
   value: string;

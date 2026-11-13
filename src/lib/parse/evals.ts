@@ -97,6 +97,9 @@ export function parseAssignment(el: Element, pageUrl: string): Assignment {
 
   const [grade, outOf] = fraction(find(f, 'nota obtenida')?.textContent);
   const weightedEl = el.querySelector('.head_subaccord .gradeW');
+  // El encabezado de cada asignación a veces trae los puntos del curso: "16.49 / 23.00"
+  // (ganado / lo que vale). "-- / 0.00" significa que el profe no lo configuró.
+  const [, worthRaw] = fraction(el.querySelector('.head_subaccord .vt_grade_student')?.textContent);
 
   const desc = decodeDescription(find(f, 'descripcion'), pageUrl);
 
@@ -114,6 +117,7 @@ export function parseAssignment(el: Element, pageUrl: string): Assignment {
     grade,
     outOf,
     weighted: weightedEl ? num(weightedEl.textContent) : null,
+    worth: worthRaw && worthRaw > 0 ? worthRaw : null,
     description: /^no hay descripcion/i.test(norm(desc.text)) ? '' : desc.text,
     links: dedupe([...desc.links, ...links(el.querySelector('.content_delivery .col-md-6'), pageUrl)]),
     value: clean(find(f, 'valor de la asignacion')?.textContent),
