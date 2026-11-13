@@ -11,9 +11,31 @@ const round1 = (n: number) => Math.round(n * 10) / 10;
  * si en Exámenes (25) llevás 11.9 y la única nota es 95.2/100, entonces ya se
  * evaluaron 11.9 / 0.952 = 12.5 puntos de esos 25.
  */
+/**
+ * Lo que vale cada asignación del rubro, si se puede saber con certeza. Muchos
+ * profes ponen el valor como el "de cuánto" (I parcial: 16.49 / 23, III parcial
+ * -- / 27) o todas sobre 100 y pesan igual. Se reparte el peso del rubro en
+ * proporción a eso y solo se acepta si cuadra con el subtotal que da el TEC.
+ */
+export function itemWorths(cat: Category): Map<string, number> | null {
+  const w = cat.weight ?? 0;
+  const items = cat.assignments;
+  if (!w || !items.length || items.some((a) => !a.outOf || a.outOf <= 0)) return null;
+  const total = items.reduce((s, a) => s + a.outOf!, 0);
+  const worths = new Map(items.map((a) => [a.id, (w * a.outOf!) / total]));
+  const graded = items.filter((a) => a.grade != null);
+  if (!graded.length) return cat.earned ? null : worths;
+  const predicted = graded.reduce((s, a) => s + worths.get(a.id)! * (a.grade! / a.outOf!), 0);
+  const earned = cat.earned ?? 0;
+  // El TEC redondea (o trunca) el subtotal, así que se deja un margen chico.
+  return Math.abs(predicted - earned) <= Math.max(0.2, w * 0.01) ? worths : null;
+}
+
 export function evaluatedWeight(cat: Category): number {
   const w = cat.weight ?? 0;
   if (!w) return 0;
+  const exact = itemWorths(cat);
+  if (exact) return cat.assignments.filter((a) => a.grade != null).reduce((s, a) => s + exact.get(a.id)!, 0);
   const graded = cat.assignments.filter((a) => a.grade != null && a.outOf);
   const earned = cat.earned ?? 0;
   if (!graded.length) {
@@ -79,6 +101,8 @@ export interface Pending {
   worth: number;
   /** true si es "lo que falta publicar" de un rubro, no una asignación. */
   rest: boolean;
+  /** true si el valor sale exacto de los "de cuánto"; false si es estimado. */
+  exact?: boolean;
 }
 
 const valueNum = (v: string) => {
@@ -98,6 +122,11 @@ export function pendingItems(data: EvalsData): Pending[] {
     const left = (cat.weight ?? 0) - evaluatedWeight(cat);
     if (left < 0.05) continue;
     const open = cat.assignments.filter((a) => a.grade == null);
+    const exact = itemWorths(cat);
+    if (exact && open.length) {
+      for (const a of open) out.push({ key: a.id, name: a.name, category: cat.name, worth: exact.get(a.id)!, rest: false, exact: true });
+      continue;
+    }
     if (!open.length) {
       out.push({ key: `rest:${cat.id}`, name: `Resto de ${cat.name}`, category: cat.name, worth: left, rest: true });
       continue;

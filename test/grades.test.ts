@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluatedWeight, finalIf, pendingItems, project, simulate } from '../src/lib/grades';
+import { evaluatedWeight, finalIf, itemWorths, pendingItems, project, simulate } from '../src/lib/grades';
 import type { Assignment, Category } from '../src/lib/types';
 
 const a = (grade: number | null, outOf = 100): Assignment => ({
@@ -68,5 +68,21 @@ describe('calculadora de nota', () => {
     expect(simulate(20, items, { a: 0 })).toMatchObject({ kind: 'short', max: 60 });
     expect(simulate(20, items, { a: 100, b: undefined })).toMatchObject({ kind: 'need', pct: 19 });
     expect(simulate(70, items, {})).toMatchObject({ kind: 'safe' });
+  });
+
+  it('valor exacto cuando el "de cuánto" es el peso (caso real de MA2404)', () => {
+    const asg = (id: string, grade: number | null, outOf: number) => ({ id, name: id, grade, outOf } as never);
+    const parciales = { id: 'p', name: 'Exámenes parciales', weight: 75, earned: 38.9, assignments: [asg('I', 16.49, 23), asg('II', 22.5, 25), asg('III', null, 27)] };
+    const tareas = { id: 't', name: 'Asignaciones', weight: 25, earned: 16.4, assignments: [asg('1', 100, 100), asg('2', 100, 100), asg('3', 95, 100), asg('4', 65, 100), asg('5', 100, 100), asg('6', null, 100), asg('7', null, 100)] };
+    const items = pendingItems({ categories: [parciales, tareas], total: 55.3, totalOf: 100 } as never);
+    expect(items.map((i) => [i.key, Math.round(i.worth * 100) / 100])).toEqual([['III', 27], ['6', 3.57], ['7', 3.57]]);
+    expect(evaluatedWeight(parciales as never)).toBeCloseTo(48, 5);
+  });
+
+  it('si el valor por "de cuánto" no cuadra con el subtotal, se vuelve a estimar', () => {
+    const asg = (id: string, grade: number | null, outOf: number) => ({ id, name: id, grade, outOf } as never);
+    // Proyecto pesa 40 y las tareas 10 cada una, pero todas son sobre 100.
+    const cat = { id: 'x', name: 'X', weight: 60, earned: 36, assignments: [asg('proy', 90, 100), asg('t1', null, 100), asg('t2', null, 100)] };
+    expect(itemWorths(cat as never)).toBeNull();
   });
 });

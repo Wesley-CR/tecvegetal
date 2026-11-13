@@ -68,7 +68,7 @@
             {#each items as it (it.key)}
               <li>
                 <span class="sim-name">{it.name}<span class="muted">{it.rest ? 'aún sin publicar' : it.category}</span></span>
-                <span class="worth muted">vale ~{fmt(Math.round(it.worth * 10) / 10)}</span>
+                <span class="worth muted">vale {it.exact ? '' : '~'}{fmt(Math.round(it.worth * 10) / 10)}</span>
                 <label class="score">
                   <span class="sr-only">Nota en {it.name}</span>
                   <input type="number" inputmode="decimal" min="0" max="100" step="any" placeholder={sim?.kind === 'need' ? String(sim.pct) : '–'} value={scores[it.key] ?? ''} oninput={(e) => setScore(it.key, (e.currentTarget as HTMLInputElement).value)} />
